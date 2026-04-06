@@ -35,5 +35,6 @@ public class PlayerMove : MonoBehaviour
     {
         controller.Move(movementVector * Time.deltaTime);
         //AudioManager.instance.Play("Footsteps");
+        //AudioManager.instance.Stop("Footsteps");
     }
 }
