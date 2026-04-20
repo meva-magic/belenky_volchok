@@ -4,11 +4,16 @@ using UnityEngine;
 
 public class SelectionManager : MonoBehaviour
 {
-    public Material defaultMat;
-    public Material highlightMat;
-    public Material selectedMat;
-
-    public LayerMask targetLayer; // Changed from LayoutMask to LayerMask
+    [Header("Outline Settings")]
+    public Color hoverColor = Color.yellow;
+    public Color selectedColor = Color.green;
+    public float outlineWidth = 2f;
+    
+    [Header("Visibility Settings")]
+    [Tooltip("If true, outline will be visible through other objects. If false, outline will be hidden when obscured.")]
+    public bool showOutlineThroughObjects = false;
+    
+    public LayerMask targetLayer;
 
     [SerializeField] private GameObject selectedObj;
     private GameObject hoveredObj;
@@ -38,24 +43,16 @@ public class SelectionManager : MonoBehaviour
                 // Reset previous hovered object
                 if (hoveredObj != null && hoveredObj != selectedObj)
                 {
-                    MeshRenderer prevRenderer = hoveredObj.GetComponent<MeshRenderer>();
-                    if (prevRenderer != null)
-                    {
-                        prevRenderer.material = defaultMat;
-                        Debug.Log("Hover ended on: " + hoveredObj.name);
-                    }
+                    DisableOutline(hoveredObj);
+                    Debug.Log("Hover ended on: " + hoveredObj.name);
                 }
                 
                 // Highlight new hovered object (if not selected)
                 hoveredObj = hitObject;
                 if (hoveredObj != selectedObj)
                 {
-                    MeshRenderer newRenderer = hoveredObj.GetComponent<MeshRenderer>();
-                    if (newRenderer != null)
-                    {
-                        newRenderer.material = highlightMat;
-                        Debug.Log("Hovering over: " + hoveredObj.name);
-                    }
+                    EnableOutline(hoveredObj, hoverColor);
+                    Debug.Log("Hovering over: " + hoveredObj.name);
                 }
             }
         }
@@ -64,12 +61,8 @@ public class SelectionManager : MonoBehaviour
             // No object being hovered
             if (hoveredObj != null && hoveredObj != selectedObj)
             {
-                MeshRenderer prevRenderer = hoveredObj.GetComponent<MeshRenderer>();
-                if (prevRenderer != null)
-                {
-                    prevRenderer.material = defaultMat;
-                    Debug.Log("Hover ended (no object)");
-                }
+                DisableOutline(hoveredObj);
+                Debug.Log("Hover ended (no object)");
                 hoveredObj = null;
             }
         }
@@ -90,24 +83,16 @@ public class SelectionManager : MonoBehaviour
                 // Reset previous selection
                 if (selectedObj != null)
                 {
-                    MeshRenderer prevRenderer = selectedObj.GetComponent<MeshRenderer>();
-                    if (prevRenderer != null)
-                    {
-                        prevRenderer.material = defaultMat;
-                        Debug.Log("Deselected: " + selectedObj.name);
-                    }
+                    DisableOutline(selectedObj);
+                    Debug.Log("Deselected: " + selectedObj.name);
                 }
                 
                 // Select new object
                 selectedObj = clickedObject;
                 
-                // Apply selection material
-                MeshRenderer newRenderer = selectedObj.GetComponent<MeshRenderer>();
-                if (newRenderer != null)
-                {
-                    newRenderer.material = selectedMat;
-                    Debug.Log("Selected: " + selectedObj.name);
-                }
+                // Apply selection outline
+                EnableOutline(selectedObj, selectedColor);
+                Debug.Log("Selected: " + selectedObj.name);
                 
                 // Update hovered object if it's the same as selected
                 if (hoveredObj == selectedObj)
@@ -120,15 +105,46 @@ public class SelectionManager : MonoBehaviour
                 // Clicked on nothing - clear selection
                 if (selectedObj != null)
                 {
-                    MeshRenderer prevRenderer = selectedObj.GetComponent<MeshRenderer>();
-                    if (prevRenderer != null)
-                    {
-                        prevRenderer.material = defaultMat;
-                        Debug.Log("Deselected: " + selectedObj.name + " (clicked empty space)");
-                    }
+                    DisableOutline(selectedObj);
+                    Debug.Log("Deselected: " + selectedObj.name + " (clicked empty space)");
                     selectedObj = null;
                 }
             }
+        }
+    }
+
+    void EnableOutline(GameObject obj, Color color)
+    {
+        Outline outline = obj.GetComponent<Outline>();
+        if (outline == null)
+        {
+            outline = obj.AddComponent<Outline>();
+        }
+        
+        outline.OutlineColor = color;
+        outline.OutlineWidth = outlineWidth;
+        
+        // Choose mode based on visibility setting
+        if (showOutlineThroughObjects)
+        {
+            // Outline will be visible through other objects
+            outline.OutlineMode = Outline.Mode.OutlineAll;
+        }
+        else
+        {
+            // Outline will be hidden when object is obscured
+            outline.OutlineMode = Outline.Mode.OutlineVisible;
+        }
+        
+        outline.EnableOutline(true);
+    }
+
+    void DisableOutline(GameObject obj)
+    {
+        Outline outline = obj.GetComponent<Outline>();
+        if (outline != null)
+        {
+            outline.EnableOutline(false);
         }
     }
 }

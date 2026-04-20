@@ -79,6 +79,7 @@ public class Outline : MonoBehaviour {
   private Material outlineFillMaterial;
 
   private bool needsUpdate;
+  private bool isOutlineEnabled = false;
 
   void Awake() {
 
@@ -97,19 +98,13 @@ public class Outline : MonoBehaviour {
 
     // Apply material properties immediately
     needsUpdate = true;
+    
+    // Start with outline disabled
+    EnableOutline(false);
   }
 
   void OnEnable() {
-    foreach (var renderer in renderers) {
-
-      // Append outline shaders
-      var materials = renderer.sharedMaterials.ToList();
-
-      materials.Add(outlineMaskMaterial);
-      materials.Add(outlineFillMaterial);
-
-      renderer.materials = materials.ToArray();
-    }
+    // Don't automatically add materials - let EnableOutline control this
   }
 
   void OnValidate() {
@@ -138,16 +133,7 @@ public class Outline : MonoBehaviour {
   }
 
   void OnDisable() {
-    foreach (var renderer in renderers) {
-
-      // Remove outline shaders
-      var materials = renderer.sharedMaterials.ToList();
-
-      materials.Remove(outlineMaskMaterial);
-      materials.Remove(outlineFillMaterial);
-
-      renderer.materials = materials.ToArray();
-    }
+    RemoveOutlineMaterials();
   }
 
   void OnDestroy() {
@@ -304,6 +290,56 @@ public class Outline : MonoBehaviour {
         outlineFillMaterial.SetFloat("_ZTest", (float)UnityEngine.Rendering.CompareFunction.Greater);
         outlineFillMaterial.SetFloat("_OutlineWidth", 0f);
         break;
+    }
+  }
+
+  // Public method to enable/disable outline
+  public void EnableOutline(bool enable)
+  {
+    if (enable && !isOutlineEnabled)
+    {
+      AddOutlineMaterials();
+      isOutlineEnabled = true;
+    }
+    else if (!enable && isOutlineEnabled)
+    {
+      RemoveOutlineMaterials();
+      isOutlineEnabled = false;
+    }
+  }
+
+  // Public method to set outline color
+  public void SetOutlineColor(Color color)
+  {
+    OutlineColor = color;
+  }
+
+  private void AddOutlineMaterials()
+  {
+    foreach (var renderer in renderers)
+    {
+      var materials = renderer.sharedMaterials.ToList();
+      
+      // Only add if not already present
+      if (!materials.Contains(outlineMaskMaterial))
+        materials.Add(outlineMaskMaterial);
+      if (!materials.Contains(outlineFillMaterial))
+        materials.Add(outlineFillMaterial);
+      
+      renderer.materials = materials.ToArray();
+    }
+  }
+
+  private void RemoveOutlineMaterials()
+  {
+    foreach (var renderer in renderers)
+    {
+      var materials = renderer.sharedMaterials.ToList();
+      
+      materials.Remove(outlineMaskMaterial);
+      materials.Remove(outlineFillMaterial);
+      
+      renderer.materials = materials.ToArray();
     }
   }
 }
