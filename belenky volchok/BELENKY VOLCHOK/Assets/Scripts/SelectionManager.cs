@@ -17,52 +17,80 @@ public class SelectionManager : MonoBehaviour
 
     [SerializeField] private GameObject selectedObj;
     private GameObject hoveredObj;
+    private Camera mainCamera;
+
+    void Start()
+    {
+        mainCamera = Camera.main;
+    }
 
     void Update()
     {
-        // Handle object hover
         HandleHover();
-        
-        // Handle object selection
         HandleSelection();
     }
 
     void HandleHover()
     {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
+        // Get mouse X position and create a vertical plane ray
+        Ray mouseRay = mainCamera.ScreenPointToRay(Input.mousePosition);
         
-        // Only raycast against the target layer
-        if (Physics.Raycast(ray, out hit, Mathf.Infinity, targetLayer))
+        // Find all objects in front of the camera
+        Collider[] allColliders = Physics.OverlapSphere(mainCamera.transform.position, 100f, targetLayer);
+        
+        GameObject closestObject = null;
+        float smallestAngle = float.MaxValue;
+        float closestDistance = float.MaxValue;
+        
+        Vector3 cameraForward = mainCamera.transform.forward;
+        Vector3 cameraRight = mainCamera.transform.right;
+        
+        // Project mouse ray onto horizontal plane to get direction
+        Vector3 mouseDirection = mouseRay.direction;
+        mouseDirection.y = 0;
+        mouseDirection.Normalize();
+        
+        foreach (Collider col in allColliders)
         {
-            GameObject hitObject = hit.transform.gameObject;
+            Vector3 directionToTarget = col.transform.position - mainCamera.transform.position;
+            float distance = directionToTarget.magnitude;
+            directionToTarget.y = 0;
+            directionToTarget.Normalize();
             
-            // If hovering over a different object
-            if (hoveredObj != hitObject)
+            // Check if object is roughly in the same horizontal direction as mouse
+            float angle = Vector3.Angle(mouseDirection, directionToTarget);
+            
+            if (angle < 15f) // Within 15 degrees horizontally
             {
-                // Reset previous hovered object
+                if (distance < closestDistance)
+                {
+                    closestDistance = distance;
+                    closestObject = col.gameObject;
+                }
+            }
+        }
+        
+        if (closestObject != null)
+        {
+            if (hoveredObj != closestObject)
+            {
                 if (hoveredObj != null && hoveredObj != selectedObj)
                 {
                     DisableOutline(hoveredObj);
-                    Debug.Log("Hover ended on: " + hoveredObj.name);
                 }
                 
-                // Highlight new hovered object (if not selected)
-                hoveredObj = hitObject;
+                hoveredObj = closestObject;
                 if (hoveredObj != selectedObj)
                 {
                     EnableOutline(hoveredObj, hoverColor);
-                    Debug.Log("Hovering over: " + hoveredObj.name);
                 }
             }
         }
         else
         {
-            // No object being hovered
             if (hoveredObj != null && hoveredObj != selectedObj)
             {
                 DisableOutline(hoveredObj);
-                Debug.Log("Hover ended (no object)");
                 hoveredObj = null;
             }
         }
@@ -72,41 +100,21 @@ public class SelectionManager : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-            
-            // Only raycast against the target layer
-            if (Physics.Raycast(ray, out hit, Mathf.Infinity, targetLayer))
+            if (hoveredObj != null)
             {
-                GameObject clickedObject = hit.transform.gameObject;
-                
-                // Reset previous selection
                 if (selectedObj != null)
                 {
                     DisableOutline(selectedObj);
-                    Debug.Log("Deselected: " + selectedObj.name);
                 }
                 
-                // Select new object
-                selectedObj = clickedObject;
-                
-                // Apply selection outline
+                selectedObj = hoveredObj;
                 EnableOutline(selectedObj, selectedColor);
-                Debug.Log("Selected: " + selectedObj.name);
-                
-                // Update hovered object if it's the same as selected
-                if (hoveredObj == selectedObj)
-                {
-                    Debug.Log(selectedObj.name + " is now selected (was hovering)");
-                }
             }
             else
             {
-                // Clicked on nothing - clear selection
                 if (selectedObj != null)
                 {
                     DisableOutline(selectedObj);
-                    Debug.Log("Deselected: " + selectedObj.name + " (clicked empty space)");
                     selectedObj = null;
                 }
             }
@@ -124,15 +132,12 @@ public class SelectionManager : MonoBehaviour
         outline.OutlineColor = color;
         outline.OutlineWidth = outlineWidth;
         
-        // Choose mode based on visibility setting
         if (showOutlineThroughObjects)
         {
-            // Outline will be visible through other objects
             outline.OutlineMode = Outline.Mode.OutlineAll;
         }
         else
         {
-            // Outline will be hidden when object is obscured
             outline.OutlineMode = Outline.Mode.OutlineVisible;
         }
         
