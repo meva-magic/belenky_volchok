@@ -9,15 +9,14 @@ public class SelectionManager : MonoBehaviour
     public Color selectedColor = Color.green;
     public float outlineWidth = 2f;
     
-    [Header("Visibility Settings")]
-    [Tooltip("If true, outline will be visible through other objects. If false, outline will be hidden when obscured.")]
-    public bool showOutlineThroughObjects = false;
-    
     public LayerMask targetLayer;
 
     [SerializeField] private GameObject selectedObj;
     private GameObject hoveredObj;
     private Camera mainCamera;
+    
+    public string hoveredObjectName = "";
+    public string selectedObjectName = "";
 
     void Start()
     {
@@ -27,40 +26,34 @@ public class SelectionManager : MonoBehaviour
     void Update()
     {
         HandleHover();
-        HandleSelection();
+        HandleInteraction();
     }
 
     void HandleHover()
     {
-        // Get mouse X position and create a vertical plane ray
         Ray mouseRay = mainCamera.ScreenPointToRay(Input.mousePosition);
-        
-        // Find all objects in front of the camera
         Collider[] allColliders = Physics.OverlapSphere(mainCamera.transform.position, 100f, targetLayer);
         
         GameObject closestObject = null;
-        float smallestAngle = float.MaxValue;
         float closestDistance = float.MaxValue;
         
-        Vector3 cameraForward = mainCamera.transform.forward;
-        Vector3 cameraRight = mainCamera.transform.right;
-        
-        // Project mouse ray onto horizontal plane to get direction
         Vector3 mouseDirection = mouseRay.direction;
         mouseDirection.y = 0;
         mouseDirection.Normalize();
         
         foreach (Collider col in allColliders)
         {
+            IInteractable interactable = col.GetComponent<IInteractable>();
+            if (interactable == null) continue;
+            
             Vector3 directionToTarget = col.transform.position - mainCamera.transform.position;
             float distance = directionToTarget.magnitude;
             directionToTarget.y = 0;
             directionToTarget.Normalize();
             
-            // Check if object is roughly in the same horizontal direction as mouse
             float angle = Vector3.Angle(mouseDirection, directionToTarget);
             
-            if (angle < 15f) // Within 15 degrees horizontally
+            if (angle < 15f)
             {
                 if (distance < closestDistance)
                 {
@@ -80,6 +73,8 @@ public class SelectionManager : MonoBehaviour
                 }
                 
                 hoveredObj = closestObject;
+                hoveredObjectName = hoveredObj.name;
+                
                 if (hoveredObj != selectedObj)
                 {
                     EnableOutline(hoveredObj, hoverColor);
@@ -92,23 +87,32 @@ public class SelectionManager : MonoBehaviour
             {
                 DisableOutline(hoveredObj);
                 hoveredObj = null;
+                hoveredObjectName = "";
             }
         }
     }
 
-    void HandleSelection()
+    void HandleInteraction()
     {
         if (Input.GetMouseButtonDown(0))
         {
             if (hoveredObj != null)
             {
-                if (selectedObj != null)
-                {
-                    DisableOutline(selectedObj);
-                }
+                IInteractable interactable = hoveredObj.GetComponent<IInteractable>();
                 
-                selectedObj = hoveredObj;
-                EnableOutline(selectedObj, selectedColor);
+                if (interactable != null)
+                {
+                    if (selectedObj != null)
+                    {
+                        DisableOutline(selectedObj);
+                    }
+                    
+                    selectedObj = hoveredObj;
+                    selectedObjectName = selectedObj.name;
+                    EnableOutline(selectedObj, selectedColor);
+                    
+                    interactable.Interact();
+                }
             }
             else
             {
@@ -116,6 +120,7 @@ public class SelectionManager : MonoBehaviour
                 {
                     DisableOutline(selectedObj);
                     selectedObj = null;
+                    selectedObjectName = "";
                 }
             }
         }
@@ -131,16 +136,7 @@ public class SelectionManager : MonoBehaviour
         
         outline.OutlineColor = color;
         outline.OutlineWidth = outlineWidth;
-        
-        if (showOutlineThroughObjects)
-        {
-            outline.OutlineMode = Outline.Mode.OutlineAll;
-        }
-        else
-        {
-            outline.OutlineMode = Outline.Mode.OutlineVisible;
-        }
-        
+        outline.OutlineMode = Outline.Mode.OutlineVisible;
         outline.EnableOutline(true);
     }
 
