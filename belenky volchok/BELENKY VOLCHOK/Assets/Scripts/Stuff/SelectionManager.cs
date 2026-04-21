@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class SelectionManager : MonoBehaviour
@@ -10,25 +8,25 @@ public class SelectionManager : MonoBehaviour
     public float outlineWidth = 2f;
     
     public LayerMask targetLayer;
-
-    [SerializeField] private GameObject selectedObj;
+    
+    private GameObject selectedObj;
     private GameObject hoveredObj;
     private Camera mainCamera;
     
     public string hoveredObjectName = "";
     public string selectedObjectName = "";
-
+    
     void Start()
     {
         mainCamera = Camera.main;
     }
-
+    
     void Update()
     {
         HandleHover();
-        HandleInteraction();
+        HandleClick();
     }
-
+    
     void HandleHover()
     {
         Ray mouseRay = mainCamera.ScreenPointToRay(Input.mousePosition);
@@ -37,29 +35,26 @@ public class SelectionManager : MonoBehaviour
         GameObject closestObject = null;
         float closestDistance = float.MaxValue;
         
-        Vector3 mouseDirection = mouseRay.direction;
-        mouseDirection.y = 0;
-        mouseDirection.Normalize();
+        Vector3 mouseDir = mouseRay.direction;
+        mouseDir.y = 0;
+        mouseDir.Normalize();
         
         foreach (Collider col in allColliders)
         {
             IInteractable interactable = col.GetComponent<IInteractable>();
             if (interactable == null) continue;
             
-            Vector3 directionToTarget = col.transform.position - mainCamera.transform.position;
-            float distance = directionToTarget.magnitude;
-            directionToTarget.y = 0;
-            directionToTarget.Normalize();
+            Vector3 dirToTarget = col.transform.position - mainCamera.transform.position;
+            float distance = dirToTarget.magnitude;
+            dirToTarget.y = 0;
+            dirToTarget.Normalize();
             
-            float angle = Vector3.Angle(mouseDirection, directionToTarget);
+            float angle = Vector3.Angle(mouseDir, dirToTarget);
             
-            if (angle < 15f)
+            if (angle < 15f && distance < closestDistance)
             {
-                if (distance < closestDistance)
-                {
-                    closestDistance = distance;
-                    closestObject = col.gameObject;
-                }
+                closestDistance = distance;
+                closestObject = col.gameObject;
             }
         }
         
@@ -68,17 +63,13 @@ public class SelectionManager : MonoBehaviour
             if (hoveredObj != closestObject)
             {
                 if (hoveredObj != null && hoveredObj != selectedObj)
-                {
                     DisableOutline(hoveredObj);
-                }
                 
                 hoveredObj = closestObject;
                 hoveredObjectName = hoveredObj.name;
                 
                 if (hoveredObj != selectedObj)
-                {
                     EnableOutline(hoveredObj, hoverColor);
-                }
             }
         }
         else
@@ -91,8 +82,8 @@ public class SelectionManager : MonoBehaviour
             }
         }
     }
-
-    void HandleInteraction()
+    
+    void HandleClick()
     {
         if (Input.GetMouseButtonDown(0))
         {
@@ -103,9 +94,7 @@ public class SelectionManager : MonoBehaviour
                 if (interactable != null)
                 {
                     if (selectedObj != null)
-                    {
                         DisableOutline(selectedObj);
-                    }
                     
                     selectedObj = hoveredObj;
                     selectedObjectName = selectedObj.name;
@@ -125,27 +114,36 @@ public class SelectionManager : MonoBehaviour
             }
         }
     }
-
+    
     void EnableOutline(GameObject obj, Color color)
     {
-        Outline outline = obj.GetComponent<Outline>();
-        if (outline == null)
-        {
-            outline = obj.AddComponent<Outline>();
-        }
-        
-        outline.OutlineColor = color;
-        outline.OutlineWidth = outlineWidth;
-        outline.OutlineMode = Outline.Mode.OutlineVisible;
-        outline.EnableOutline(true);
-    }
-
-    void DisableOutline(GameObject obj)
-    {
-        Outline outline = obj.GetComponent<Outline>();
+        Outline outline = GetOutlineFromObject(obj);
         if (outline != null)
         {
-            outline.EnableOutline(false);
+            outline.OutlineColor = color;
+            outline.OutlineWidth = outlineWidth;
+            outline.OutlineMode = Outline.Mode.OutlineVisible;
+            outline.EnableOutline(true);
         }
+    }
+    
+    void DisableOutline(GameObject obj)
+    {
+        Outline outline = GetOutlineFromObject(obj);
+        if (outline != null)
+            outline.EnableOutline(false);
+    }
+    
+    Outline GetOutlineFromObject(GameObject obj)
+    {
+        TightSpriteOutline tight = obj.GetComponent<TightSpriteOutline>();
+        if (tight != null)
+            return tight.GetOutline();
+        
+        Outline outline = obj.GetComponent<Outline>();
+        if (outline == null)
+            outline = obj.GetComponentInChildren<Outline>();
+        
+        return outline;
     }
 }
