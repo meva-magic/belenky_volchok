@@ -1,46 +1,49 @@
 using UnityEngine;
 
-public class MouseParallax : MonoBehaviour
+public class MouseParalaxEffect : MonoBehaviour
 {
-    [SerializeField] private GameObject[] parallaxObjects;
-    [SerializeField] private float mouseSpeedX = 0.5f;
-    [SerializeField] private float mouseSpeedY = 0.3f;
-    [SerializeField] private float smoothTime = 0.1f;
+    [Tooltip("Start from furthest to the nearest object.")]
+    [SerializeField] private GameObject[] ParalaxObjects;
+    [SerializeField] private float moveDistance = 20f;
     
-    private Vector3[] originalPositions;
-    private Vector3[] velocities;
-    private Vector3 currentOffset;
-    private Vector3 targetOffset;
-    
+    private Vector3[] OriginalPositions;
+    private Vector2 currentMousePos;
+
     void Start()
     {
-        originalPositions = new Vector3[parallaxObjects.Length];
-        velocities = new Vector3[parallaxObjects.Length];
+        Cursor.lockState = CursorLockMode.Confined;
         
-        for (int i = 0; i < parallaxObjects.Length; i++)
+        OriginalPositions = new Vector3[ParalaxObjects.Length];
+        
+        for (int i = 0; i < ParalaxObjects.Length; i++)
         {
-            originalPositions[i] = parallaxObjects[i].transform.position;
+            OriginalPositions[i] = ParalaxObjects[i].transform.position;
         }
     }
-    
+
     void Update()
     {
-        float x = (Input.mousePosition.x - Screen.width * 0.5f) / (Screen.width * 0.5f);
-        float y = (Input.mousePosition.y - Screen.height * 0.5f) / (Screen.height * 0.5f);
+        // Get mouse position (-1 to 1 range)
+        float x = (Input.mousePosition.x - Screen.width / 2f) / (Screen.width / 2f);
+        float y = (Input.mousePosition.y - Screen.height / 2f) / (Screen.height / 2f);
         
-        targetOffset = new Vector3(x * mouseSpeedX, y * mouseSpeedY, 0);
-        currentOffset = Vector3.Lerp(currentOffset, targetOffset, smoothTime * 10f * Time.deltaTime);
+        // Smooth mouse movement
+        currentMousePos = Vector2.Lerp(currentMousePos, new Vector2(x, y), Time.deltaTime * 8f);
         
-        for (int i = 0; i < parallaxObjects.Length; i++)
+        // Apply parallax to each object
+        for (int i = 0; i < ParalaxObjects.Length; i++)
         {
-            float depthFactor = (float)(i + 1) / parallaxObjects.Length;
-            Vector3 offset = currentOffset * depthFactor;
+            // Front objects (higher index) move more
+            float depth = (float)i / (ParalaxObjects.Length - 1);
+            float moveAmount = moveDistance * (depth * 1.5f + 0.3f);
             
-            parallaxObjects[i].transform.position = Vector3.SmoothDamp(
-                parallaxObjects[i].transform.position,
-                originalPositions[i] + offset,
-                ref velocities[i],
-                smoothTime
+            Vector3 offset = new Vector3(currentMousePos.x * moveAmount, currentMousePos.y * moveAmount * 0.5f, 0f);
+            
+            // Smooth movement
+            ParalaxObjects[i].transform.position = Vector3.Lerp(
+                ParalaxObjects[i].transform.position,
+                OriginalPositions[i] + offset,
+                Time.deltaTime * 5f
             );
         }
     }
