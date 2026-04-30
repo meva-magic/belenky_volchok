@@ -979,22 +979,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e059acae83099d6409d88281b16fc4d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  useCustomPalette: 1
-  paletteColors:
-  - {r: 0, g: 0, b: 0.1, a: 1}
-  - {r: 0.2, g: 0.1, b: 0.3, a: 1}
-  - {r: 0.4, g: 0.2, b: 0.2, a: 1}
-  - {r: 0.5, g: 0.4, b: 0.2, a: 1}
-  - {r: 0.6, g: 0.5, b: 0.4, a: 1}
-  - {r: 0.8, g: 0.7, b: 0.6, a: 1}
-  - {r: 0.9, g: 0.85, b: 0.8, a: 1}
-  - {r: 1, g: 0.95, b: 0.9, a: 1}
-  quantizationSteps: 8
-  spread: 0.5
-  bayerLevel: 1
-  enableEffect: 1
-  inverseColors: 0
-  showDebugInfo: 0
+  retroShader: {fileID: 0}
+  pixelSize: 4
+  colorReductionMode: 0
+  redLevels: 8
+  greenLevels: 8
+  blueLevels: 8
+  paletteTexture: {fileID: 0}
+  paletteColorCount: 16
+  smoothPalette: 1
+  invertPalette: 0
+  ditherSpread: 0.5
+  ditherMethod: 1
+  blueNoiseTexture: {fileID: 0}
 --- !u!1 &373354709
 GameObject:
   m_ObjectHideFlags: 0

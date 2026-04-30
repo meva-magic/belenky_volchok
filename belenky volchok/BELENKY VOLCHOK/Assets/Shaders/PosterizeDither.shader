@@ -5,22 +5,14 @@ Shader "UI/PosterizeDither"
         [PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
         
         [Header(Color Palette)]
-        _Color0 ("Color 0", Color) = (0, 0, 0, 1)
-        _Color1 ("Color 1", Color) = (0.25, 0.25, 0.25, 1)
-        _Color2 ("Color 2", Color) = (0.5, 0.5, 0.5, 1)
-        _Color3 ("Color 3", Color) = (0.75, 0.75, 0.75, 1)
-        _Color4 ("Color 4", Color) = (1, 1, 1, 1)
-        _Color5 ("Color 5", Color) = (0, 0, 0, 1)
-        _Color6 ("Color 6", Color) = (0, 0, 0, 1)
-        _Color7 ("Color 7", Color) = (0, 0, 0, 1)
-        _PaletteCount ("Palette Count", Range(1, 8)) = 5
+        _ColorPalette ("Color Palette", 2D) = "white" {}
         
         [Header(Dithering)]
         _Spread ("Dither Spread", Range(0, 1)) = 0.5
         [Enum(2x2,0,4x4,1,8x8,2)] _BayerLevel ("Bayer Level", Float) = 1
         
         [Header(Options)]
-        _Invert ("Invert", Range(0, 1)) = 0
+        [Toggle] _Invert ("Invert", Float) = 0
         
         // Required for UI masking
         _StencilComp ("Stencil Comparison", Float) = 8
@@ -92,18 +84,10 @@ Shader "UI/PosterizeDither"
             };
 
             sampler2D _MainTex;
+            sampler2D _ColorPalette;
             float4 _MainTex_ST;
             float4 _MainTex_TexelSize;
-            
-            fixed4 _Color0;
-            fixed4 _Color1;
-            fixed4 _Color2;
-            fixed4 _Color3;
-            fixed4 _Color4;
-            fixed4 _Color5;
-            fixed4 _Color6;
-            fixed4 _Color7;
-            int _PaletteCount;
+            float4 _ColorPalette_TexelSize;
             
             float _Spread;
             int _BayerLevel;
@@ -142,7 +126,6 @@ Shader "UI/PosterizeDither"
 
             float GetBayerValue(float2 uv)
             {
-                // Get pixel coordinates
                 int x = (int)(uv.x * _MainTex_TexelSize.z);
                 int y = (int)(uv.y * _MainTex_TexelSize.w);
                 
@@ -154,6 +137,11 @@ Shader "UI/PosterizeDither"
                     return bayer8[(x % 8) + (y % 8) * 8] / 64.0 - 0.5;
             }
 
+            float ColorToGrayscale(float3 color)
+            {
+                return dot(color, float3(0.299, 0.587, 0.114));
+            }
+
             fixed4 frag(v2f IN) : SV_Target
             {
                 // Sample the texture
@@ -161,40 +149,29 @@ Shader "UI/PosterizeDither"
                 color *= IN.color;
 
                 // Invert if enabled
+                float paletteInput = ColorToGrayscale(color.rgb);
                 if (_Invert == 1)
-                    color.rgb = 1.0 - color.rgb;
+                    paletteInput = 1.0 - paletteInput;
 
-                // Apply dithering
+                // Apply dithering to grayscale value for palette lookup
                 float bayerValue = GetBayerValue(IN.texcoord);
-                color.rgb += _Spread * bayerValue;
-                color.rgb = saturate(color.rgb);
+                paletteInput += _Spread * bayerValue;
+                paletteInput = saturate(paletteInput);
 
-                // Create palette array
-                fixed4 palette[8];
-                palette[0] = _Color0;
-                palette[1] = _Color1;
-                palette[2] = _Color2;
-                palette[3] = _Color3;
-                palette[4] = _Color4;
-                palette[5] = _Color5;
-                palette[6] = _Color6;
-                palette[7] = _Color7;
-
-                // Find nearest color in palette
-                fixed3 result = palette[0].rgb;
-                float minDist = 1000.0; // Large initial value
+                // Sample palette using the method from PaletteSwapper.shader
+                // Use floor/ceil for proper point sampling with interpolation
+                float paletteWidth = _ColorPalette_TexelSize.z;
+                float paletteIndex = paletteInput * paletteWidth;
                 
-                for (int i = 0; i < _PaletteCount; i++)
-                {
-                    float dist = distance(color.rgb, palette[i].rgb);
-                    if (dist < minDist)
-                    {
-                        minDist = dist;
-                        result = palette[i].rgb;
-                    }
-                }
-
-                color.rgb = result;
+                float firstIndex = floor(paletteIndex) / paletteWidth;
+                float secondIndex = ceil(paletteIndex) / paletteWidth;
+                
+                float4 firstColor = tex2D(_ColorPalette, float2(firstIndex + (0.5 / paletteWidth), 0.5));
+                float4 secondColor = tex2D(_ColorPalette, float2(secondIndex + (0.5 / paletteWidth), 0.5));
+                
+                float4 paletteColor = lerp(firstColor, secondColor, frac(paletteIndex));
+                
+                color.rgb = paletteColor.rgb;
 
                 #ifdef UNITY_UI_CLIP_RECT
                 color.a *= UnityGet2DClipping(IN.worldPosition.xy, _ClipRect);
