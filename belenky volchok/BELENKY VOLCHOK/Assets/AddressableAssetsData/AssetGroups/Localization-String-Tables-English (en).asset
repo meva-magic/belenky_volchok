@@ -17,12 +17,42 @@ MonoBehaviour:
     m_SerializedData: []
   m_GUID: 9f73aa32bfecb954ba2f3c53c9c845e2
   m_SerializeEntries:
+  - m_GUID: 1c71338a9cf7a034886564e83a5e5acd
+    m_Address: Pause Labels_en
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 679f6f30f92fd4f4ea43c72fa5d42ac8
     m_Address: Menu Labels_en
     m_ReadOnly: 1
     m_SerializedLabels:
     - Locale-en
     - Preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9041e177ea2658e4bb138a674d245c37
+    m_Address: Screen Transitions_en
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 989be0223adbb5e4ba8f307bea8602b3
+    m_Address: Confirm Labels_en
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: eee9f22f36b931642876b168a3bc594f
+    m_Address: Dialogue_en
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ef3439cf40b3af94ab1123cd06291df5
+    m_Address: Settings Labels_en
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 1
   m_Settings: {fileID: 11400000, guid: 00f956f37cb198b40b286bb48d4cf414, type: 2}

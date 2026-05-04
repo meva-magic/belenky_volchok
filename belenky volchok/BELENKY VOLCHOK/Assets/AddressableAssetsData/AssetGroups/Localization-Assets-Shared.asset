@@ -17,8 +17,33 @@ MonoBehaviour:
     m_SerializedData: []
   m_GUID: fb7addd9b7841c343baeee85cee3312b
   m_SerializeEntries:
+  - m_GUID: 1477d5da3ce9afd4480c871e0757cb94
+    m_Address: Assets/TextMesh Pro/Locales/Tables/Dialogue Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 17b062945e6398747aad983b1d29152c
+    m_Address: Assets/Locales/Tables/Screen Transitions Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 814c4358874f10f4bb34be329f952051
     m_Address: Assets/TextMesh Pro/Locales/Menu Labels Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c55a64cd0820faf4494e4b496bb6b768
+    m_Address: Assets/Locales/Tables/Settings Labels Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e6783f5c76deb674483e35fc1af753ce
+    m_Address: Assets/Locales/Tables/Confirm Labels Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ee38a63c8aefda34baccb9e6f5572575
+    m_Address: Assets/TextMesh Pro/Locales/Tables/Pause Labels Shared Data.asset
     m_ReadOnly: 1
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

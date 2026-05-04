@@ -10,26 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
-  m_Name: Menu Labels_en
+  m_Name: Dialogue_ru
   m_EditorClassIdentifier: 
   m_LocaleId:
-    m_Code: en
-  m_SharedData: {fileID: 11400000, guid: 814c4358874f10f4bb34be329f952051, type: 2}
+    m_Code: ru
+  m_SharedData: {fileID: 11400000, guid: 1477d5da3ce9afd4480c871e0757cb94, type: 2}
   m_Metadata:
     m_Items: []
-  m_TableData:
-  - m_Id: 291758923776
-    m_Localized: Play
-    m_Metadata:
-      m_Items: []
-  - m_Id: 2599771168768
-    m_Localized: Settings
-    m_Metadata:
-      m_Items: []
-  - m_Id: 2770932326400
-    m_Localized: Exit
-    m_Metadata:
-      m_Items: []
+  m_TableData: []
   references:
     version: 2
     RefIds: []
