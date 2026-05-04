@@ -60,9 +60,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 71c1514a6bd24e1e882cebbe1904ce04, type: 3}
   m_Name: Necromancer SDF
   m_EditorClassIdentifier: 
-  hashCode: 0
+  hashCode: -860054958
   material: {fileID: 8082032877405672705}
-  materialHashCode: 0
+  materialHashCode: 1642262066
   m_Version: 1.1.0
   m_SourceFontFileGUID: 98b9d52695c4db4409124adadba358c1
   m_SourceFontFile_EditorRef: {fileID: 12800000, guid: 98b9d52695c4db4409124adadba358c1,
@@ -256,9 +256,9 @@ Material:
     - _OutlineWidth: 0
     - _PerspectiveFilter: 0.875
     - _Reflectivity: 10
-    - _ScaleRatioA: 1
-    - _ScaleRatioB: 1
-    - _ScaleRatioC: 1
+    - _ScaleRatioA: 0.8888889
+    - _ScaleRatioB: 0.7222222
+    - _ScaleRatioC: 0.7222222
     - _ScaleX: 1
     - _ScaleY: 1
     - _ShaderFlags: 0
