@@ -27,9 +27,8 @@ public class SettingsPanel : MonoBehaviour
     private void Start()
     {
         LoadSettings();
-        FixInvalidVolume(); // Fix any incorrect saved values
+        FixInvalidVolume();
         
-        // Audio listeners
         if (volumeSlider != null)
         {
             volumeSlider.value = currentVolume * 100f;
@@ -39,7 +38,6 @@ public class SettingsPanel : MonoBehaviour
         if (soundToggleButton != null)
             soundToggleButton.onClick.AddListener(ToggleSound);
         
-        // Language listeners
         if (englishButton != null)
             englishButton.onClick.AddListener(() => SetLanguage(englishLocaleIndex));
         
@@ -52,15 +50,7 @@ public class SettingsPanel : MonoBehaviour
     
     private void FixInvalidVolume()
     {
-        // If volume is greater than 1 (meaning it's storing 0-100 value instead of 0-1)
-        if (currentVolume > 1f)
-        {
-            currentVolume = 1f; // Reset to 100%
-            SaveSettings();
-        }
-        
-        // If volume is NaN or negative
-        if (float.IsNaN(currentVolume) || currentVolume < 0f)
+        if (currentVolume > 1f || float.IsNaN(currentVolume) || currentVolume < 0f)
         {
             currentVolume = 1f;
             SaveSettings();

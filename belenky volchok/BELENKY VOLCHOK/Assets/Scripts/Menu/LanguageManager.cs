@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
+using System.Collections;
 
 public class LanguageManager : MonoBehaviour
 {
@@ -8,17 +9,16 @@ public class LanguageManager : MonoBehaviour
     [SerializeField] private Button englishButton;
     [SerializeField] private Button russianButton;
     
-    [Header("Button Visuals (Optional)")]
-    [SerializeField] private Image englishButtonImage;
-    [SerializeField] private Image russianButtonImage;
-    [SerializeField] private Sprite selectedSprite;
-    [SerializeField] private Sprite normalSprite;
-    
     private int englishLocaleIndex = 0;
     private int russianLocaleIndex = 1;
+    private bool isInitialized = false;
     
-    private void Start()
+    private IEnumerator Start()
     {
+        // Wait for localization to fully initialize
+        yield return LocalizationSettings.InitializationOperation;
+        isInitialized = true;
+        
         // Setup button listeners
         if (englishButton != null)
             englishButton.onClick.AddListener(() => SetLanguage(englishLocaleIndex));
@@ -26,40 +26,41 @@ public class LanguageManager : MonoBehaviour
         if (russianButton != null)
             russianButton.onClick.AddListener(() => SetLanguage(russianLocaleIndex));
         
-        // Update button visuals based on current language
-        UpdateButtonVisuals();
+        // Now safe to load saved language
+        LoadSavedLanguage();
     }
     
     private void SetLanguage(int localeIndex)
     {
+        if (!isInitialized)
+        {
+            Debug.LogWarning("Cannot change language - localization not initialized yet");
+            return;
+        }
+        
         LocalizationSettings.SelectedLocale = LocalizationSettings.AvailableLocales.Locales[localeIndex];
-        UpdateButtonVisuals();
         
         // Save preference
         PlayerPrefs.SetInt("SelectedLanguage", localeIndex);
         PlayerPrefs.Save();
     }
     
-    private void UpdateButtonVisuals()
-    {
-        if (selectedSprite == null || normalSprite == null) return;
-        
-        int currentIndex = LocalizationSettings.AvailableLocales.Locales.IndexOf(LocalizationSettings.SelectedLocale);
-        
-        if (englishButtonImage != null)
-            englishButtonImage.sprite = currentIndex == englishLocaleIndex ? selectedSprite : normalSprite;
-        
-        if (russianButtonImage != null)
-            russianButtonImage.sprite = currentIndex == russianLocaleIndex ? selectedSprite : normalSprite;
-    }
-    
-    // Call this if you want to load saved language preference
-    public void LoadSavedLanguage()
+    private void LoadSavedLanguage()
     {
         if (PlayerPrefs.HasKey("SelectedLanguage"))
         {
             int savedIndex = PlayerPrefs.GetInt("SelectedLanguage");
             SetLanguage(savedIndex);
         }
+    }
+    
+    private void OnDestroy()
+    {
+        // Clean up listeners
+        if (englishButton != null)
+            englishButton.onClick.RemoveAllListeners();
+        
+        if (russianButton != null)
+            russianButton.onClick.RemoveAllListeners();
     }
 }
