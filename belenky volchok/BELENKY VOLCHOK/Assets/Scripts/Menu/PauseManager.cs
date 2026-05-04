@@ -17,9 +17,13 @@ public class PauseManager : MonoBehaviour
     [SerializeField] private Button confirmNoButton;
     
     private bool isPaused = false;
+    private PlayerStateManager playerStateManager;
     
     private void Start()
     {
+        // Find the player state manager
+        playerStateManager = FindObjectOfType<PlayerStateManager>();
+        
         // Hide panels at start
         if (pausePanel != null)
             pausePanel.SetActive(false);
@@ -61,6 +65,10 @@ public class PauseManager : MonoBehaviour
         isPaused = true;
         Time.timeScale = 0f;
         
+        // Switch to UI state (free cursor, no movement)
+        if (playerStateManager != null)
+            playerStateManager.SetUIState();
+        
         if (pausePanel != null)
             pausePanel.SetActive(true);
     }
@@ -69,6 +77,10 @@ public class PauseManager : MonoBehaviour
     {
         isPaused = false;
         Time.timeScale = 1f;
+        
+        // Switch to gameplay state (locked cursor, movement enabled)
+        if (playerStateManager != null)
+            playerStateManager.SetGameplayState();
         
         if (pausePanel != null)
             pausePanel.SetActive(false);
