@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using UnityEngine.Localization.Settings;
 
 public class SettingsPanel : MonoBehaviour
 {
@@ -21,14 +20,16 @@ public class SettingsPanel : MonoBehaviour
     
     private float currentVolume = 1f;
     private bool isSoundOn = true;
-    private int englishLocaleIndex = 0;
-    private int russianLocaleIndex = 1;
+    
+    private const string VOLUME_KEY = "Volume";
+    private const string SOUND_KEY = "SoundOn";
     
     private void Start()
     {
         LoadSettings();
         FixInvalidVolume();
         
+        // Audio listeners
         if (volumeSlider != null)
         {
             volumeSlider.value = currentVolume * 100f;
@@ -38,11 +39,12 @@ public class SettingsPanel : MonoBehaviour
         if (soundToggleButton != null)
             soundToggleButton.onClick.AddListener(ToggleSound);
         
+        // Language listeners - direct call to LanguageManager
         if (englishButton != null)
-            englishButton.onClick.AddListener(() => SetLanguage(englishLocaleIndex));
+            englishButton.onClick.AddListener(() => LanguageManager.Instance?.SetLanguage(0));
         
         if (russianButton != null)
-            russianButton.onClick.AddListener(() => SetLanguage(russianLocaleIndex));
+            russianButton.onClick.AddListener(() => LanguageManager.Instance?.SetLanguage(1));
         
         UpdateUI();
         ApplyAudioSettings();
@@ -73,17 +75,9 @@ public class SettingsPanel : MonoBehaviour
         SaveSettings();
     }
     
-    private void SetLanguage(int localeIndex)
-    {
-        LocalizationSettings.SelectedLocale = LocalizationSettings.AvailableLocales.Locales[localeIndex];
-        PlayerPrefs.SetInt("SelectedLanguage", localeIndex);
-        PlayerPrefs.Save();
-    }
-    
     private void ApplyAudioSettings()
     {
-        float finalVolume = isSoundOn ? currentVolume : 0f;
-        AudioListener.volume = finalVolume;
+        AudioListener.volume = isSoundOn ? currentVolume : 0f;
     }
     
     private void UpdateUI()
@@ -111,14 +105,14 @@ public class SettingsPanel : MonoBehaviour
     
     private void SaveSettings()
     {
-        PlayerPrefs.SetFloat("Volume", currentVolume);
-        PlayerPrefs.SetInt("SoundOn", isSoundOn ? 1 : 0);
+        PlayerPrefs.SetFloat(VOLUME_KEY, currentVolume);
+        PlayerPrefs.SetInt(SOUND_KEY, isSoundOn ? 1 : 0);
         PlayerPrefs.Save();
     }
     
     private void LoadSettings()
     {
-        currentVolume = PlayerPrefs.GetFloat("Volume", 1f);
-        isSoundOn = PlayerPrefs.GetInt("SoundOn", 1) == 1;
+        currentVolume = PlayerPrefs.GetFloat(VOLUME_KEY, 1f);
+        isSoundOn = PlayerPrefs.GetInt(SOUND_KEY, 1) == 1;
     }
 }
