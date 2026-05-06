@@ -1,0 +1,11 @@
+Hi, thanks for purchasing the PSX Forrest pack.
+
+
+things of note: 
+
+-The shader provided is only compatible with UNITY
+-Models are exported in the Z-up Y-foward blender orientation. this may cause rotational issues. 
+-Please give credit when using assets.
+-Textures are low resolution, to get blocky look use the "point" or "closest" interpolation method.
+
+Have a nice day!
